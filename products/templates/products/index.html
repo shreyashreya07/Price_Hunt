@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PriceHunt — Compare Prices Instantly</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        /* ═══════════════ TOKENS ═══════════════ */
+        :root {
+            --ink:      #0f0f12;
+            --ink2:     #1c1c22;
+            --surface:  #ffffff;
+            --rim:      #e8e8ef;
+            --rim2:     #f3f3f8;
+            --muted:    #8888a0;
+            --accent:   #5046e5;
+            --accent-l: #ebe9ff;
+            --green:    #059669;
+            --green-l:  #d1fae5;
+            --amber:    #d97706;
+            --amber-l:  #fef3c7;
+            --red:      #dc2626;
+            --fk:       #2874F0;
+            --amz:      #FF9900;
+            --sd:       #E40046;
+            --msh:      #F43397;
+            --r: 16px;
+            --r-sm: 10px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: #f7f7fb;
+            color: var(--ink);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ═══════════════ NAV ═══════════════ */
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--rim);
+            padding: 0 2rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 12px rgba(0,0,0,.05);
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--ink);
+            letter-spacing: -.02em;
+            text-decoration: none;
+        }
+
+        .logo span { color: var(--accent); }
+
+        .nav-chips {
+            display: flex;
+            gap: .5rem;
+        }
+
+        .nav-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            padding: .3rem .8rem;
+            border-radius: 100px;
+            background: var(--rim2);
+            color: var(--muted);
+            font-size: .78rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background .15s, color .15s;
+        }
+
+        .nav-chip:hover,
+        .nav-chip.active {
+            background: var(--accent-l);
+            color: var(--accent);
+        }
+
+        /* ═══════════════ HERO SEARCH ═══════════════ */
+        .hero {
+            background: var(--surface);
+            border-bottom: 1px solid var(--rim);
+            padding: 2.8rem 2rem 2rem;
+            text-align: center;
+        }
+
+        .hero-eyebrow {
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: .8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
+        }
+
+        .hero-eyebrow::before,
+        .hero-eyebrow::after {
+            content: '';
+            width: 28px;
+            height: 1px;
+            background: var(--accent);
+            opacity: .4;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.9rem, 4vw, 2.9rem);
+            font-weight: 800;
+            letter-spacing: -.03em;
+            color: var(--ink);
+            margin-bottom: .4rem;
+            line-height: 1.15;
+        }
+
+        .hero h1 em {
+            font-style: normal;
+            color: var(--accent);
+        }
+
+        .hero-sub {
+            color: var(--muted);
+            font-size: .9rem;
+            margin-bottom: 1.8rem;
+        }
+
+        /* Search bar */
+        .search-row {
+            display: flex;
+            gap: .6rem;
+            max-width: 680px;
+            margin: 0 auto 1.4rem;
+        }
+
+        .search-field {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: var(--rim2);
+            border: 1.5px solid var(--rim);
+            border-radius: 12px;
+            padding: 0 1rem;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .search-field:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(80,70,229,.1);
+            background: var(--surface);
+        }
+
+        .search-field i {
+            color: var(--muted);
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .search-field input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: .95rem;
+            color: var(--ink);
+            padding: .8rem .6rem;
+        }
+
+        .search-field input::placeholder { color: var(--muted); }
+
+        .btn-search {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 0 1.6rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: .9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            transition: background .2s, transform .1s, box-shadow .2s;
+            white-space: nowrap;
+        }
+
+        .btn-search:hover {
+            background: #3d33cc;
+            box-shadow: 0 4px 16px rgba(80,70,229,.3);
+        }
+
+        .btn-search:active { transform: scale(.98); }
+
+        /* ── Price range filter ── */
+        .filter-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .7rem;
+            flex-wrap: wrap;
+            padding-bottom: .4rem;
+        }
+
+        .filter-label {
+            font-size: .78rem;
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
+
+        .price-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+            background: var(--rim2);
+            border: 1.5px solid var(--rim);
+            border-radius: 8px;
+            padding: .3rem .6rem;
+            transition: border-color .2s;
+        }
+
+        .price-input-wrap:focus-within {
+            border-color: var(--accent);
+        }
+
+        .price-input-wrap span {
+            font-size: .8rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .price-input-wrap input {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: 'DM Sans', sans-serif;
+            font-size: .88rem;
+            color: var(--ink);
+            font-weight: 500;
+            width: 90px;
+        }
+
+        .filter-sep {
+            color: var(--muted);
+            font-size: .8rem;
+        }
+
+        .btn-filter {
+            background: var(--surface);
+            border: 1.5px solid var(--rim);
+            border-radius: 8px;
+            padding: .38rem .9rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: .8rem;
+            font-weight: 600;
+            color: var(--ink);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            transition: border-color .2s, background .2s;
+        }
+
+        .btn-filter:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-l);
+        }
+
+        /* ═══════════════ PLATFORM BADGES ═══════════════ */
+        .platform-row {
+            display: flex;
+            justify-content: center;
+            gap: .5rem;
+            flex-wrap: wrap;
+            padding: 1rem 2rem .4rem;
+        }
+
+        .platform-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            background: var(--surface);
+            border: 1.5px solid var(--rim);
+            border-radius: 100px;
+            padding: .25rem .8rem;
+            font-size: .72rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .platform-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        /* ═══════════════ RESULTS AREA ═══════════════ */
+        .results-wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* ── Summary bar ── */
+        .summary-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: .8rem;
+        }
+
+        .summary-left {
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+        }
+
+        .result-count {
+            font-size: .78rem;
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
+
+        .query-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            background: var(--accent-l);
+            color: var(--accent);
+            border-radius: 6px;
+            padding: .2rem .6rem;
+            font-size: .78rem;
+            font-weight: 600;
+        }
+
+        .savings-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            background: var(--green-l);
+            color: var(--green);
+            border-radius: 8px;
+            padding: .3rem .8rem;
+            font-size: .78rem;
+            font-weight: 600;
+        }
+
+        /* ── Product Grid ── */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.2rem;
+        }
+
+        /* ── Product Card ── */
+        .pcard {
+            background: var(--surface);
+            border: 1.5px solid var(--rim);
+            border-radius: var(--r);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: border-color .2s, box-shadow .2s, transform .2s;
+            animation: fadeUp .35s ease both;
+            position: relative;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .pcard:nth-child(1) { animation-delay: .04s; }
+        .pcard:nth-child(2) { animation-delay: .08s; }
+        .pcard:nth-child(3) { animation-delay: .12s; }
+        .pcard:nth-child(4) { animation-delay: .16s; }
+        .pcard:nth-child(5) { animation-delay: .20s; }
+        .pcard:nth-child(6) { animation-delay: .24s; }
+        .pcard:nth-child(7) { animation-delay: .28s; }
+        .pcard:nth-child(8) { animation-delay: .32s; }
+
+        .pcard:hover {
+            border-color: #c4c0f7;
+            box-shadow: 0 8px 32px rgba(80,70,229,.1), 0 2px 8px rgba(0,0,0,.06);
+            transform: translateY(-3px);
+        }
+
+        /* Best deal card styling */
+        .pcard.best-deal {
+            border-color: var(--green);
+            border-width: 2px;
+        }
+
+        .pcard.best-deal::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--green), #34d399);
+        }
+
+        /* ── Image area ── */
+        .pcard-img-wrap {
+            position: relative;
+            background: var(--rim2);
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .pcard-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 1rem;
+            transition: transform .3s ease;
+        }
+
+        .pcard:hover .pcard-img {
+            transform: scale(1.05);
+        }
+
+        /* Rank ribbon */
+        .rank-ribbon {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--ink);
+            color: #fff;
+            font-size: .65rem;
+            font-weight: 700;
+            letter-spacing: .05em;
+            padding: .2rem .5rem;
+            border-radius: 6px;
+        }
+
+        .pcard.best-deal .rank-ribbon {
+            background: var(--green);
+        }
+
+        /* Site logo badge */
+        .site-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .7rem;
+            font-weight: 800;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,.2);
+        }
+
+        /* ── Card body ── */
+        .pcard-body {
+            padding: 1rem 1.1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+        }
+
+        .pcard-platform {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            font-size: .7rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .pcard-platform::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .pcard-name {
+            font-size: .88rem;
+            font-weight: 500;
+            color: var(--ink);
+            line-height: 1.45;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        /* ── Price & CTA row ── */
+        .pcard-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .8rem 1.1rem 1rem;
+            border-top: 1px solid var(--rim);
+            margin-top: auto;
+        }
+
+        .price-block {}
+
+        .price-label {
+            font-size: .65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--muted);
+            line-height: 1;
+            margin-bottom: .15rem;
+        }
+
+        .price-amount {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1;
+        }
+
+        .pcard.best-deal .price-amount {
+            color: var(--green);
+        }
+
+        .price-sym {
+            font-family: 'DM Sans', sans-serif;
+            font-size: .85rem;
+            font-weight: 600;
+            vertical-align: super;
+            margin-right: .05em;
+        }
+
+        /* CTA button */
+        .btn-view {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: var(--r-sm);
+            padding: .5rem .9rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: .78rem;
+            text-decoration: none;
+            transition: background .2s, box-shadow .2s, transform .1s;
+            white-space: nowrap;
+        }
+
+        .btn-view:hover {
+            background: #3d33cc;
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(80,70,229,.3);
+        }
+
+        .btn-view:active { transform: scale(.97); }
+
+        .pcard.best-deal .btn-view {
+            background: var(--green);
+        }
+
+        .pcard.best-deal .btn-view:hover {
+            background: #047857;
+            box-shadow: 0 4px 14px rgba(5,150,105,.3);
+        }
+
+        /* ═══════════════ BEST DEAL BANNER ═══════════════ */
+        .best-banner {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            background: var(--green-l);
+            border: 1px solid #a7f3d0;
+            border-radius: 10px;
+            padding: .65rem 1rem;
+            margin-bottom: 1.2rem;
+            font-size: .82rem;
+            font-weight: 500;
+            color: var(--green);
+        }
+
+        .best-banner strong {
+            font-weight: 700;
+        }
+
+        /* ═══════════════ STATS ROW ═══════════════ */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: .8rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1.5px solid var(--rim);
+            border-radius: 12px;
+            padding: .9rem 1rem;
+        }
+
+        .stat-val {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1;
+            margin-bottom: .25rem;
+        }
+
+        .stat-val.green { color: var(--green); }
+        .stat-val.accent { color: var(--accent); }
+
+        .stat-label {
+            font-size: .68rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .07em;
+        }
+
+        /* ═══════════════ EMPTY / ERROR ═══════════════ */
+        .empty-box {
+            text-align: center;
+            padding: 5rem 2rem;
+            background: var(--surface);
+            border: 1.5px dashed var(--rim);
+            border-radius: var(--r);
+        }
+
+        .empty-icon {
+            font-size: 2.5rem;
+            color: var(--muted);
+            opacity: .4;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: .4rem;
+        }
+
+        .empty-sub {
+            font-size: .85rem;
+            color: var(--muted);
+        }
+
+        .alert-bar {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: var(--red);
+            border-radius: 10px;
+            padding: .75rem 1rem;
+            font-size: .82rem;
+            font-weight: 500;
+            margin-bottom: 1.2rem;
+        }
+
+        /* ═══════════════ RESPONSIVE ═══════════════ */
+        @media (max-width: 640px) {
+            .topbar { padding: 0 1rem; }
+            .nav-chips { display: none; }
+            .hero { padding: 2rem 1rem 1.5rem; }
+            .search-row { flex-direction: column; }
+            .btn-search { justify-content: center; padding: .75rem; }
+            .filter-row { flex-direction: column; gap: .5rem; }
+            .results-wrap { padding: 1.2rem 1rem 3rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══ TOPBAR ══ -->
+<nav class="topbar">
+    <a href="/" class="logo">Price<span>Hunt</span></a>
+    <div class="nav-chips">
+        <a href="#" class="nav-chip active"><i class="bi bi-bar-chart-fill"></i> Compare</a>
+    </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+    <div class="hero-eyebrow">4 Platforms · Real-Time Prices</div>
+    <h1>Compare.</h1>
+    <p class="hero-sub">We scan Flipkart, Amazon, Snapdeal & Meesho to find your best deal.</p>
+
+    <form method="GET">
+        <!-- Search input -->
+        <div class="search-row">
+            <div class="search-field">
+                <i class="bi bi-search"></i>
+                <input
+                    type="text"
+                    name="query"
+                    placeholder="Search for any product — e.g. iPhone 15, Sony headphones..."
+                    value="{{ query }}"
+                    autocomplete="off"
+                    required
+                >
+            </div>
+            <button type="submit" class="btn-search">
+                <i class="bi bi-lightning-charge-fill"></i> Search
+            </button>
+        </div>
+
+        <!-- Price range filter -->
+        <div class="filter-row">
+            <span class="filter-label"><i class="bi bi-funnel-fill"></i> Price Range</span>
+
+            <div class="price-input-wrap">
+                <span>₹</span>
+                <input
+                    type="number"
+                    name="min_price"
+                    placeholder="Min"
+                    value="{{ min_price }}"
+                    min="0"
+                >
+            </div>
+
+            <span class="filter-sep">—</span>
+
+            <div class="price-input-wrap">
+                <span>₹</span>
+                <input
+                    type="number"
+                    name="max_price"
+                    placeholder="Max"
+                    value="{{ max_price }}"
+                    min="0"
+                >
+            </div>
+
+            {% if query %}
+            <button type="submit" class="btn-filter">
+                <i class="bi bi-arrow-clockwise"></i> Apply
+            </button>
+            {% if min_price or max_price %}
+            <a href="?query={{ query }}" class="btn-filter" style="text-decoration:none;">
+                <i class="bi bi-x"></i> Clear
+            </a>
+            {% endif %}
+            {% endif %}
+        </div>
+    </form>
+</section>
+
+<!-- ══ PLATFORM ROW ══ -->
+<div class="platform-row">
+    <span class="platform-badge">
+        <span class="platform-dot" style="background:var(--fk)"></span> Flipkart
+    </span>
+    <span class="platform-badge">
+        <span class="platform-dot" style="background:var(--amz)"></span> Amazon
+    </span>
+    <span class="platform-badge">
+        <span class="platform-dot" style="background:var(--sd)"></span> Snapdeal
+    </span>
+    <span class="platform-badge">
+        <span class="platform-dot" style="background:var(--msh)"></span> Meesho
+    </span>
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div class="results-wrap">
+
+    {% if error %}
+    <div class="alert-bar">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        {{ error }}
+    </div>
+    {% endif %}
+
+    {% if products %}
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-val accent">{{ products|length }}</div>
+            <div class="stat-label">Results Found</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val green">₹{{ products.0.price|floatformat:"0" }}</div>
+            <div class="stat-label">Lowest Price</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val">{{ products.0.site }}</div>
+            <div class="stat-label">Best Platform</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val">4</div>
+            <div class="stat-label">Sites Scanned</div>
+        </div>
+    </div>
+
+    <!-- Best deal banner -->
+    <div class="best-banner">
+        <i class="bi bi-award-fill" style="font-size:1rem;"></i>
+        <span>
+            Best deal found on <strong>{{ products.0.site }}</strong> —
+            <strong>{{ products.0.name|truncatechars:50 }}</strong>
+            at <strong>₹{{ products.0.price }}</strong>
+        </span>
+    </div>
+
+    <!-- Summary bar -->
+    <div class="summary-bar">
+        <div class="summary-left">
+            <span class="result-count">Top {{ products|length }} results</span>
+            {% if query %}
+            <span class="query-tag">
+                <i class="bi bi-search"></i> {{ query }}
+            </span>
+            {% endif %}
+            {% if min_price or max_price %}
+            <span class="query-tag" style="background:#fef3c7;color:#d97706;">
+                <i class="bi bi-funnel-fill"></i>
+                {% if min_price %}₹{{ min_price }}{% else %}₹0{% endif %}
+                —
+                {% if max_price %}₹{{ max_price }}{% else %}Any{% endif %}
+            </span>
+            {% endif %}
+        </div>
+        {% if products|length > 1 %}
+        <div class="savings-chip">
+            <i class="bi bi-piggy-bank-fill"></i>
+            Lowest price first
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Product Grid -->
+    <div class="products-grid">
+        {% for item in products %}
+        <div class="pcard {% if forloop.first %}best-deal{% endif %}">
+
+            <!-- Image -->
+            <div class="pcard-img-wrap">
+                <span class="rank-ribbon">#{{ forloop.counter }}</span>
+
+                <span class="site-badge" style="background:{{ item.site_color }};">
+                    {{ item.site_icon }}
+                </span>
+
+                <img
+                    class="pcard-img"
+                    src="{{ item.image }}"
+                    alt="{{ item.name }}"
+                    loading="lazy"
+                    onerror="this.src='https://via.placeholder.com/300x300?text={{ item.site }}'"
+                >
+            </div>
+
+            <!-- Body -->
+            <div class="pcard-body">
+                <span class="pcard-platform" style="--dot-color:{{ item.site_color }}">
+                    <span style="width:6px;height:6px;border-radius:50%;background:{{ item.site_color }};display:inline-block;"></span>
+                    {{ item.site }}
+                </span>
+                <p class="pcard-name">{{ item.name }}</p>
+            </div>
+
+            <!-- Footer -->
+            <div class="pcard-footer">
+                <div class="price-block">
+                    <div class="price-label">Price</div>
+                    <div class="price-amount">
+                        <span class="price-sym">₹</span>{{ item.price|floatformat:"0" }}
+                    </div>
+                </div>
+
+                {% if item.link %}
+                <a href="{{ item.link }}" target="_blank" rel="noopener noreferrer" class="btn-view">
+                    View Deal <i class="bi bi-arrow-up-right"></i>
+                </a>
+                {% endif %}
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+
+        {% if query %}
+        <div class="empty-box">
+            <i class="bi bi-search empty-icon"></i>
+            <div class="empty-title">No results found</div>
+            <p class="empty-sub">
+                No products matched "<strong>{{ query }}</strong>"
+                {% if min_price or max_price %}in your selected price range{% endif %}.
+                <br>Try a different search or widen your price filter.
+            </p>
+        </div>
+        {% else %}
+        <div class="empty-box">
+            <i class="bi bi-bag-heart empty-icon"></i>
+            <div class="empty-title">Start comparing prices</div>
+            <p class="empty-sub">
+                Type any product above — we'll scan 4 platforms and<br>
+                show you the best 10 deals, sorted by price.
+            </p>
+        </div>
+        {% endif %}
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>
